@@ -4,7 +4,7 @@ def TARGET
 pipeline {
     agent any
     parameters{
-        choice  choices: ["Baseline"],
+        choice  choices: ["FullScan"],
                  description: 'Type of scan that is going to perform inside the container',
                  name: 'SCAN_TYPE'
         choice  choices: ["Created", "NOT Created"],
@@ -83,7 +83,7 @@ pipeline {
                     scan_type = "${params.SCAN_TYPE}"
                     echo "----> scan_type: $scan_type"
                     target = "${params.TARGET}"
-                    if(scan_type == "Fullline"){
+                    if(scan_type == "FullScan"){
                          sh """
                              sudo docker exec owasp \
                              zap-full-scan.py \
