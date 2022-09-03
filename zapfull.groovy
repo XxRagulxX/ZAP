@@ -111,6 +111,7 @@ pipeline {
         stage('Stopping'){
             steps{
                 script{
+                    sh 'sudo aa-remove-unknown'
                     sh 'sudo docker stop owasp'
                 }
             }
