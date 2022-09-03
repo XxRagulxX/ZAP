@@ -1,3 +1,6 @@
+//Credits to Taman for helping us to develop the code . 
+//Coded by XxRagulxX
+
 def SCAN_TYPE
 def SCAN_TYPE_TEST
 def TARGET
