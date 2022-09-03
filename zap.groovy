@@ -1,3 +1,5 @@
+//Credits to Taman for helping to develop the code . 
+//Codded by XxRagulxX
 def SCAN_TYPE
 def SCAN_TYPE_TEST
 def TARGET
@@ -118,6 +120,6 @@ pipeline {
             }
         }
     }
-            
-        
+                 
 }
+
