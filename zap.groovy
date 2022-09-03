@@ -112,7 +112,7 @@ pipeline {
             steps{
                 script{
                     sh 'sudo docker exec -i owasp bash'
-                    sh 'kill 1'
+                    sh 'sudo kill 1'
                     sh 'sudo docker stop owasp'
                 }
             }
