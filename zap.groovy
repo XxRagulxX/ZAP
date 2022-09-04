@@ -35,6 +35,7 @@ pipeline {
                              Scan Type: ${params.SCAN_TYPE}
                              Target: ${params.TARGET}
                              Generate report: ${params.GENERATE_REPORT}
+                             Email report: ${params.Email}
                          """
                      }
                  } 
