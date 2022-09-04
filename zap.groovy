@@ -107,7 +107,7 @@ pipeline {
                     sh '''
                         sudo docker cp owasp:/zap/wrk/report.html ${WORKSPACE}/report.html
                     '''
-                    emailext attachmentsPattern: '**/zap/wrk/*report.html ', body: 'Hello Bro', subject: 'Just Bug Testing', to: 'donragulsurya@gmail.com'
+                    emailext attachmentsPattern: 'report.html ', body: 'Hello Bro', subject: 'Just Bug Testing', to: 'donragulsurya@gmail.com'
                 }
             }
         }
