@@ -107,7 +107,8 @@ pipeline {
                     sh '''
                         sudo docker cp owasp:/zap/wrk/report.html ${WORKSPACE}/report.html
                     '''
-                    emailext attachLog: true, body: 'testing', subject: 'ZAP Scanning Report', to: 'donragulsurya@gmail.com'
+                    emailextrecipients([buildUser()])
+                    emailext attachLog: true, body: 'HELLO', subject: 'TESTING', to: 'donragulsurya@gmail.com'
                 }
             }
         }
