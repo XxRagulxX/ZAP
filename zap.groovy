@@ -42,7 +42,7 @@ pipeline {
                     scan_type_test = "${params.SCAN_TYPE_TEST}"
                     echo "----> scan_type: $scan_type_test"
                     if(scan_type_test == "Created"){
-                        // sh 'sudo docker rm owasp'
+                         sh 'sudo docker rm owasp'
                          echo "Starting container --> Start"
                          sh """
                           sudo docker run -dt --name owasp \
