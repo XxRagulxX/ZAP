@@ -20,7 +20,7 @@ pipeline {
                  description: 'Parameter to know if wanna generate report.',
                  name: 'GENERATE_REPORT'
          booleanParam defaultValue: true,
-                 description: 'Parameter to know if wanna Email the report'
+                 description: 'Parameter to know if wanna Email the report',
                  name: 'Email'
         
     }
