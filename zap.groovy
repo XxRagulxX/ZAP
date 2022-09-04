@@ -6,7 +6,7 @@ def TARGET
 pipeline {
     agent any
     parameters{
-        choice  choices: ["Baseline"],
+        choice  choices: ["Baseline","FullScan"],
                  description: 'Type of scan that is going to perform inside the container',
                  name: 'SCAN_TYPE'
         choice  choices: ["Created", "NOT Created"],
@@ -100,7 +100,13 @@ pipeline {
                      }
                      //-x report-$(date +%d-%b-%Y).xml
                     else{
-                        echo "Something went wrong..."
+                        sh """
+                             sudo docker exec owasp \
+                             zap-full-scan.py \
+                             -t $target \
+                             -r report.html \
+                             -I
+                         """
                     }
                 }
             }
@@ -117,7 +123,7 @@ pipeline {
         }
         stage('Email') {
             when {
-                        environment name : 'Email', value: 'true'
+                    environment name : 'Email', value: 'true'
              }
              steps {
                  script {
