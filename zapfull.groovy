@@ -1,13 +1,12 @@
-//Credits to Taman for helping us to develop the code . 
+//Credits to Taman for helping to develop the code . 
 //Coded by XxRagulxX
-
 def SCAN_TYPE
 def SCAN_TYPE_TEST
 def TARGET
 pipeline {
     agent any
     parameters{
-        choice  choices: ["FullScan"],
+        choice  choices: ["Baseline","FullScan"],
                  description: 'Type of scan that is going to perform inside the container',
                  name: 'SCAN_TYPE'
         choice  choices: ["Created", "NOT Created"],
@@ -20,6 +19,9 @@ pipeline {
          booleanParam defaultValue: true,
                  description: 'Parameter to know if wanna generate report.',
                  name: 'GENERATE_REPORT'
+         booleanParam defaultValue: true,
+                 description: 'Parameter to know if wanna Email the report',
+                 name: 'Email'
         
     }
 
@@ -33,6 +35,7 @@ pipeline {
                              Scan Type: ${params.SCAN_TYPE}
                              Target: ${params.TARGET}
                              Generate report: ${params.GENERATE_REPORT}
+                             Email report: ${params.Email}
                          """
                      }
                  } 
@@ -43,7 +46,7 @@ pipeline {
                     scan_type_test = "${params.SCAN_TYPE_TEST}"
                     echo "----> scan_type: $scan_type_test"
                     if(scan_type_test == "Created"){
-                         //sh 'sudo docker rm owasp'
+                         sh 'sudo docker rm owasp'
                          echo "Starting container --> Start"
                          sh """
                           sudo docker run -dt --name owasp \
@@ -86,10 +89,10 @@ pipeline {
                     scan_type = "${params.SCAN_TYPE}"
                     echo "----> scan_type: $scan_type"
                     target = "${params.TARGET}"
-                    if(scan_type == "FullScan"){
+                    if(scan_type == "Baseline"){
                          sh """
                              sudo docker exec owasp \
-                             zap-full-scan.py \
+                             zap-baseline.py \
                              -t $target \
                              -r report.html \
                              -I
@@ -97,7 +100,13 @@ pipeline {
                      }
                      //-x report-$(date +%d-%b-%Y).xml
                     else{
-                        echo "Something went wrong..."
+                        sh """
+                             sudo docker exec owasp \
+                             zap-full-scan.py \
+                             -t $target \
+                             -r report.html \
+                             -I
+                         """
                     }
                 }
             }
@@ -108,18 +117,32 @@ pipeline {
                     sh '''
                         sudo docker cp owasp:/zap/wrk/report.html ${WORKSPACE}/report.html
                     '''
+                    
                 }
             }
         }
+        stage('Email') {
+            when {
+                    environment name : 'Email', value: 'true'
+             }
+             steps {
+                 script {
+                        
+                         emailext attachmentsPattern: 'report.html ', body: 'Hello Bro', subject: 'Just Bug Testing', to: 'donragulsurya@gmail.com'
+                    }
+                }
+        }
+
         stage('Stopping'){
             steps{
                 script{
                     sh 'sudo aa-remove-unknown'
+                    //sh 'kill 1'
                     sh 'sudo docker stop owasp'
                 }
             }
         }
     }
-            
-        
+                 
 }
+
