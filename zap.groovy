@@ -19,6 +19,9 @@ pipeline {
          booleanParam defaultValue: true,
                  description: 'Parameter to know if wanna generate report.',
                  name: 'GENERATE_REPORT'
+         booleanParam defaultValue: true,
+                 description: 'Parameter to know if wanna Email the report'
+                 name: 'Email'
         
     }
 
@@ -107,10 +110,22 @@ pipeline {
                     sh '''
                         sudo docker cp owasp:/zap/wrk/report.html ${WORKSPACE}/report.html
                     '''
-                    emailext attachmentsPattern: 'report.html ', body: 'Hello Bro', subject: 'Just Bug Testing', to: 'donragulsurya@gmail.com'
+                    
                 }
             }
         }
+        stage('Email') {
+            when {
+                        environment name : 'Email', value: 'true'
+             }
+             steps {
+                 script {
+                        
+                         emailext attachmentsPattern: 'report.html ', body: 'Hello Bro', subject: 'Just Bug Testing', to: 'donragulsurya@gmail.com'
+                    }
+                }
+        }
+
         stage('Stopping'){
             steps{
                 script{
