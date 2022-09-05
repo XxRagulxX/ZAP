@@ -3,6 +3,7 @@
 def SCAN_TYPE
 def SCAN_TYPE_TEST
 def TARGET
+def REPORT
 pipeline {
     agent any
     parameters{
@@ -12,6 +13,9 @@ pipeline {
         choice  choices: ["Created", "NOT Created"],
                  description: "OWASP ZAP Already Exist or Not",
                  name: 'SCAN_TYPE_TEST'
+        choice  choices: ["HTML","XML","JSON","WIKI"],
+                 description: 'Report Output file type',
+                 name: 'REPORT'
          string defaultValue: "http://demo.testfire.net",
                  description: 'Target URL to scan',
                  name: 'TARGET'
@@ -36,6 +40,7 @@ pipeline {
                              Target: ${params.TARGET}
                              Generate report: ${params.GENERATE_REPORT}
                              Email report: ${params.Email}
+                             Report_Test: ${params.REPORT}
                          """
                      }
                  } 
@@ -77,8 +82,6 @@ pipeline {
                         sh """
                             sudo docker exec owasp \
                             mkdir /zap/wrk \
-                
-
                         """
                     }
                 }
@@ -89,7 +92,9 @@ pipeline {
                     scan_type = "${params.SCAN_TYPE}"
                     echo "----> scan_type: $scan_type"
                     target = "${params.TARGET}"
+                    report = "${params.REPORT}"
                     if(scan_type == "Baseline"){
+                        if(report == "HTML"){
                          sh """
                              sudo docker exec owasp \
                              zap-baseline.py \
@@ -97,27 +102,106 @@ pipeline {
                              -r report.html \
                              -I
                          """
+                        }
+                        if(report == "XML"){
+                         sh """
+                             sudo docker exec owasp \
+                             zap-baseline.py \
+                             -t $target \
+                             -x report.xml \
+                             -I
+                         """
+                        }
+                        if(report == "JSON"){
+                         sh """
+                             sudo docker exec owasp \
+                             zap-baseline.py \
+                             -t $target \
+                             -J report.json \
+                             -I
+                         """
+                        }
+                        else{
+                            if(report == "WIKI"){
+                         sh """
+                             sudo docker exec owasp \
+                             zap-baseline.py \
+                             -t $target \
+                             -w report.md \
+                             -I
+                         """
+                        }
                      }
+                    }
                      //-x report-$(date +%d-%b-%Y).xml
                     else{
-                        sh """
+                        if(report == "HTML"){
+                         sh """
                              sudo docker exec owasp \
                              zap-full-scan.py \
                              -t $target \
                              -r report.html \
                              -I
                          """
+                        }
+                        if(report == "XML"){
+                         sh """
+                             sudo docker exec owasp \
+                             zap-full-scan.py \
+                             -t $target \
+                             -r report.xml \
+                             -I
+                         """
+                        }
+                        if(report == "JSON"){
+                        sh """
+                             sudo docker exec owasp \
+                             zap-full-scan.py \
+                             -t $target \
+                             -r report.md \
+                             -I
+                         """
+                        }
+                        else{
+                            if(report == "WIKI"){
+                        sh """
+                             sudo docker exec owasp \
+                             zap-full-scan.py \
+                             -t $target \
+                             -r report.md \
+                             -I
+                         """
+                            } 
+                        }
                     }
                 }
-            }
+           }
         }
         stage('Copy Report to Workspace'){
              steps {
-                 script {
-                    sh '''
-                        sudo docker cp owasp:/zap/wrk/report.html ${WORKSPACE}/report.html
-                    '''
-                    
+                script{
+                    if(report == "HTML"){
+                        sh '''
+                          sudo docker cp owasp:/zap/wrk/report.html ${WORKSPACE}/report.html
+                        '''
+                    }
+                    if(report == "XML"){
+                        sh '''
+                          sudo docker cp owasp:/zap/wrk/report.xml ${WORKSPACE}/report.xml
+                        '''
+                    }
+                    if(report == "JSON"){
+                        sh '''
+                          sudo docker cp owasp:/zap/wrk/report.json ${WORKSPACE}/report.json
+                        '''
+                    }
+                    else{
+                        if(report == "WIKI"){
+                        sh '''
+                          sudo docker cp owasp:/zap/wrk/report.md ${WORKSPACE}/report.md
+                        '''
+                        }
+                   }
                 }
             }
         }
@@ -127,10 +211,22 @@ pipeline {
              }
              steps {
                  script {
-                        
-                         emailext attachmentsPattern: 'report.html ', body: 'Hello Bro', subject: 'Just Bug Testing', to: 'donragulsurya@gmail.com'
+                    if(report == "HTML"){
+                        emailext attachmentsPattern: 'report.html', body: 'ZAP Scanning Report . Report is attached below .', subject: 'OWASP ZAP REPORT', to: 'donragulsurya@gmail.com'
+                    }
+                    if(report == "XML"){
+                        emailext attachmentsPattern: 'report.xml', body: 'ZAP Scanning Report . Report is attached below .', subject: 'OWASP ZAP REPORT', to: 'donragulsurya@gmail.com'
+                    }
+                    if(report == "JSON"){
+                        emailext attachmentsPattern: 'report.json', body: 'ZAP Scanning Report . Report is attached below .', subject: 'OWASP ZAP REPORT', to: 'donragulsurya@gmail.com'
+                    }
+                    else{
+                        if(report == "WIKI"){
+                            emailext attachmentsPattern: 'report.md', body: 'ZAP Scanning Report . Report is attached below .', subject: 'OWASP ZAP REPORT', to: 'donragulsurya@gmail.com'
+                        }
                     }
                 }
+            }
         }
 
         stage('Stopping'){
